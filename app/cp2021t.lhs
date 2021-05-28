@@ -1018,13 +1018,27 @@ ad v = p2 . cataExpAr (ad_gen v)
 Definir:
 
 \begin{code}
-outExpAr = undefined
+outExpAr :: ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
+outExpAr (X) = i1 ()
+outExpAr (N a) = i2 (i1 (a))
+outExpAr (Un op a) = i2 (i2 (i2 (op,a)))
+outExpAr (Bin op a b) = i2 (i2 (i1 (op, (a , b))))
+
 ---
-recExpAr = undefined
+recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
+  f1 f (op,(a,b)) = (op, (f a, f b))
+  f2 f (op,a) = (op, f a)
+
 ---
 g_eval_exp = undefined
 ---
-clean = undefined
+clean :: (Floating a, Eq a) => ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
+clean (X) = i1 ()
+clean (N a) = i2 (i1 (a))
+clean (Un op a) |(op == E) && a == (N 0) = i2(i1(1))
+                | otherwise = i2 (i2 (i2 (op,a)))
+clean (Bin op a b)    | (op == Product) && (a == (N 0) || b == (N 0))  =  i2(i1(0))
+                      | otherwise = i2 (i2 (i1 (op, (a , b))))
 ---
 gopt = undefined
 \end{code}
