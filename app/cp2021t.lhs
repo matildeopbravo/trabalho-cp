@@ -129,13 +129,13 @@
 \begin{tabular}{ll}
 \textbf{Grupo} nr. & 999 (preencher)
 \\\hline
-a00000 & Henrique Costa (preencher)
+a00000 & Henrique Costa
 \\
-a22222 & José Pedro Fernandes (preencher)
+a22222 & José Pedro Fernandes
 \\
-a93246 & Matilde Bravo (preencher)
+a93246 & Matilde Bravo
 \\
-a44444 & Pedro Alves (preencher, se aplicável, ou apagar)
+a93272 & Pedro Alves
 \end{tabular}
 \end{center}
 
