@@ -131,7 +131,7 @@
 \\\hline
 a00000 & Henrique Costa
 \\
-a22222 & José Pedro Fernandes
+a93163 & José Pedro Fernandes
 \\
 a93246 & Matilde Bravo
 \\
