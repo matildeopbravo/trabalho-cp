@@ -1100,9 +1100,6 @@ divide [] = i1 []
 divide [a] = i1 a
 divide l = i2 (init l, tail l)
 
-con [] = nil
-con a = const a
-
 quer (x,y)= \pt->calcLine (x pt) (y pt) pt
 
 conquer = either const quer
