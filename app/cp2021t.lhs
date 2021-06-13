@@ -1030,7 +1030,14 @@ recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
   f2 f (op,a) = (op, f a)
 
 ---
-g_eval_exp = undefined
+g_eval_exp = g_eval_exp a = either (const a) resto where
+  resto = either id resto2
+  resto2 = either bin un where
+  bin(Sum,(c,d)) = c + d
+  bin(Product,(c,d)) = c * d
+  un(Negate,c) = (-1) * c
+  un(E,c) = expd c
+
 ---
 clean :: (Floating a, Eq a) => ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
 clean (X) = i1 ()
@@ -1040,13 +1047,18 @@ clean (Un op a) |(op == E) && a == (N 0) = i2(i1(1))
 clean (Bin op a b)    | (op == Product) && (a == (N 0) || b == (N 0))  =  i2(i1(0))
                       | otherwise = i2 (i2 (i1 (op, (a , b))))
 ---
-gopt = undefined
+gopt = g_eval_exp a
 \end{code}
 
 \begin{code}
 sd_gen :: Floating a =>
     Either () (Either a (Either (BinOp, ((ExpAr a, ExpAr a), (ExpAr a, ExpAr a))) (UnOp, (ExpAr a, ExpAr a)))) -> (ExpAr a, ExpAr a)
-sd_gen = undefined
+sd_gen = either (split (const X) (N . (const 1))) resto where
+  resto = either (split (N . id) (N . (const 0))) resto2 where
+  resto2 = either f1 f2 where
+  f1(op, ((a,b),(c,d))) = (Bin op a c, Bin op b d)
+  -- temos que ver outras operacoes
+  f2(op,(a,b)) = (Un op a, Un op b)
 \end{code}
 
 \begin{code}
@@ -1112,7 +1124,7 @@ avgLTree = p1.cataLTree gene where
         where
            b' = fromIntegral b
            d' = fromIntegral d
-				
+
 \end{code}
 
 \subsection*{Problema 5}
