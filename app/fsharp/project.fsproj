@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Cp.fs" />
+    <Compile Include="Nat.fs" />
+    <Compile Include="LTree.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>
