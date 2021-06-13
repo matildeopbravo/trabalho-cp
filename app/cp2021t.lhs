@@ -1084,8 +1084,11 @@ Apresentar de seguida a justificação da solução encontrada.
 
 \begin{code}
 calcLine :: NPoint -> (NPoint -> OverTime NPoint)
-calcLine = cataList h where
-   h = undefined
+calcLine = cataList (either (const (const nil)) g) where
+   g :: (Rational, NPoint -> OverTime NPoint) -> (NPoint -> OverTime NPoint)
+   g (d,f) l = case l of
+       []     -> nil
+       (x:xs) -> \z -> concat $ (sequenceA [singl . linear1d d x, f xs]) z
 
 deCasteljau :: [NPoint] -> OverTime NPoint
 deCasteljau = hyloAlgForm alg coalg where
