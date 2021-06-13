@@ -1093,10 +1093,21 @@ calcLine = cataList (either (const (const nil)) g) where
 
 deCasteljau :: [NPoint] -> OverTime NPoint
 deCasteljau = hyloAlgForm alg coalg where
-   coalg = undefined
-   alg = undefined
+   coalg = divide
+   alg = conquer
 
-hyloAlgForm = undefined
+divide [] = i1 []
+divide [a] = i1 a
+divide l = i2 (init l, tail l)
+
+con [] = nil
+con a = const a
+
+quer (x,y)= \pt->calcLine (x pt) (y pt) pt
+
+conquer = either const quer
+
+hyloAlgForm f g =  (cataLTree f) .  (anaLTree g)
 \end{code}
 
 \subsection*{Problema 4}
