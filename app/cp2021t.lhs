@@ -1122,9 +1122,9 @@ avg_aux = cataSList (either (split id one) (split k (succ . p2 . p2)))
 Solução para árvores de tipo \LTree:
 \begin{code}
 avgLTree = p1.cataLTree gene where
-    gene = either (split id one) (split k (succ . uncurry max . (p2 >< p2)))
+    gene = either (split id one) (split k (add . (p2 >< p2)))
     k :: ((Double,Integer),(Double,Integer)) -> Double
-    k ((a,b),(c,d)) = ((a*b' + c*d') / (b'+d'))
+    k ((a,b),(c,d)) = (a*b' + c*d') / (b' + d')
         where
            b' = fromIntegral b
            d' = fromIntegral d
