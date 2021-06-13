@@ -9,6 +9,7 @@
     <Compile Include="Cp.fs" />
     <Compile Include="Nat.fs" />
     <Compile Include="LTree.fs" />
+    <Compile Include="BTree.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
