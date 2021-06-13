@@ -1030,7 +1030,7 @@ recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
   f2 f (op,a) = (op, f a)
 
 ---
-g_eval_exp = g_eval_exp a = either (const a) resto where
+g_eval_exp a = either (const a) resto where
   resto = either id resto2
   resto2 = either bin un where
   bin(Sum,(c,d)) = c + d
@@ -1047,7 +1047,7 @@ clean (Un op a) |(op == E) && a == (N 0) = i2(i1(1))
 clean (Bin op a b)    | (op == Product) && (a == (N 0) || b == (N 0))  =  i2(i1(0))
                       | otherwise = i2 (i2 (i1 (op, (a , b))))
 ---
-gopt = g_eval_exp a
+gopt a = g_eval_exp a
 \end{code}
 
 \begin{code}
@@ -1056,9 +1056,10 @@ sd_gen :: Floating a =>
 sd_gen = either (split (const X) (N . (const 1))) resto where
   resto = either (split (N . id) (N . (const 0))) resto2 where
   resto2 = either f1 f2 where
-  f1(op, ((a,b),(c,d))) = (Bin op a c, Bin op b d)
-  -- temos que ver outras operacoes
-  f2(op,(a,b)) = (Un op a, Un op b)
+  f1(Sum, ((a,b),(c,d))) = (Bin Sum a c, Bin Sum b d)
+  f1(Product, ((a,b),(c,d))) = (Bin Product a b, Bin Sum (Bin Product c b) (Bin Product d a))
+  f2(Negate,(a,b)) = (Un Negate a, Un Negate b)
+  f2(E,(a,b)) = (Un E a, Bin Product (Un E a) b)
 \end{code}
 
 \begin{code}
@@ -1068,9 +1069,9 @@ ad_gen = undefined
 \subsection*{Problema 2}
 Definir
 \begin{code}
-loop = undefined
-inic = undefined
-prj = undefined
+loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
+inic = (1, 1, 1)
+prj (top, bot, n) = (top `div` (n * bot))
 \end{code}
 por forma a que
 \begin{code}
