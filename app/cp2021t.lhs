@@ -1057,13 +1057,24 @@ sd_gen = either (split (const X) (N . (const 1))) resto where
   resto = either (split (N . id) (N . (const 0))) resto2 where
   resto2 = either f1 f2 where
   f1(Sum, ((a,b),(c,d))) = (Bin Sum a c, Bin Sum b d)
-  f1(Product, ((a,b),(c,d))) = (Bin Product a b, Bin Sum (Bin Product c b) (Bin Product d a))
+  f1(Product, ((a,b),(c,d))) = (Bin Product a c, Bin Sum (Bin Product a d) (Bin Product b c))
   f2(Negate,(a,b)) = (Un Negate a, Un Negate b)
   f2(E,(a,b)) = (Un E a, Bin Product (Un E a) b)
+  --(a,b) originais (c,b) derivadas
 \end{code}
 
 \begin{code}
-ad_gen = undefined
+
+ad_gen :: Floating a => 
+    a -> Either () (Either a (Either (BinOp, ((ExpAr a, a), (ExpAr a, a))) (UnOp, (ExpAr a, a)))) -> (ExpAr a, a)
+ad_gen v = either (split (const X) (const 1)) resto where
+  resto = either (split (N . id) (const 0)) resto2 where
+  resto2 = either f1 f2 where
+  f1(Sum, ((a,b),(c,d))) = (Bin Sum a c, b + d)
+  f1(Product, ((a,b),(c,d))) = (Bin Product a c, ((eval_exp v a) * d )+ (b * (eval_exp v c)))
+  f2(Negate,(a,b)) = (Un Negate a, negate b)
+  f2(E,(a,b)) = (Un E a, (Prelude.exp (eval_exp v a)) * b )
+
 \end{code}
 
 \subsection*{Problema 2}
