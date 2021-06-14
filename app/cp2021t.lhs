@@ -1072,8 +1072,8 @@ ad_gen v = either (split (const X) (const 1)) resto where
   resto2 = either f1 f2 where
   f1(Sum, ((a,b),(c,d))) = (Bin Sum a c, b + d)
   f1(Product, ((a,b),(c,d))) = (Bin Product a c, ((eval_exp v a) * d )+ (b * (eval_exp v c)))
-  f2(Negate,(a,b)) = (Un Negate a, negate b)
-  f2(E,(a,b)) = (Un E a, (Prelude.exp (eval_exp v a)) * b )
+  f2(Negate,(a,b)) = (Un Negate a, (-1) * b)
+  f2(E,(a,b)) = (Un E a, (expd (eval_exp v a)) * b )
 
 \end{code}
 
