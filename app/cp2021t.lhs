@@ -1538,13 +1538,14 @@ Solução para árvores de tipo \LTree:
 
 sendo
 \begin{code} avg :: LTree Num -> Num \end{code} e \begin{code} length :: LTree A -> Nat0 \end{code}
-ao aplicar o functor de Ltrees  \textbf{F} \begin{code}(split avg length)\end{code}
+ao aplicar o functor de Ltrees  \textbf{F
+} \begin{code}(split avg length)\end{code}
 Sabemos que o tipo do resultado desta aplicação será:
-\begin{Code}
-     Num + ((Num \times Nat0) \times (Num \times Nat0))
-\end{code}
+\begin{eqnarray*}
+    Num + ((Num \times $\mathbb{N}_{0}$ ) \times (Num \times $\mathbb{N}_{0}$ ))
+\end{eqnarray*}
 
-Sendo que o segundo operando da soma de tipos é um produto de tipos em que cada operando é constituido por
+      Sendo que o segundo operando da soma de tipos é um produto de tipos em que cada operando é constituido por
 um par de (média, tamanho). Desta forma já sabemos como descrever o gene deste catamorfismo.
 O primeiro operando do either é para o caso em que se trata de uma folha. Ou seja o resultado será um par com
 o número e length 1. Ou seja a função é \begin{code}(split id one)\end{code} No caso de se tratar de fork então calculamos o primeiro elemento do
