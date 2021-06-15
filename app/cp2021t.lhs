@@ -1312,41 +1312,51 @@ ad_gen v = either (split (const X) (const 1)) resto where
 \subsection*{Problema 2}
 
 Começamos por tentar definir \textit{cat} recursivamente. Para isso, vamos determinar o valor de \textit{cat (n + 1)}:
+\\
 
 \begin{math}
 Cat_n = \frac{(2n)!}{(n+1)!(n!)}
 
 Cat_{n+1} = \frac{(2(n+1))!}{(n+2)!(n+1)!}
-
+\end{math}
+\begin{math}
 = \frac{(2n+2)(2n+1)(2n)!}{(n+2)(n+1!)(n+1)n!}
-
+\end{math}
+\begin{math}
 = \frac{(2n)!}{(n+1)!n!} \times \frac{(2n+2)(2n+1)}{(n+2)(n+1)}
+\end{math}
 
+\begin{math}
 = Cat_n \times (\frac{2(n+1)(2n+1)}{(n+1)(n+2)})
+\end{math}
 
+\begin{math}
 = Cat_n \times \frac{4n + 2}{n + 2}
+\end{math}
 
+\begin{math}
 = \frac{(4n + 2) \times Cat_n}{n + 2}
 \end{math}
+\\
 
 Conseguimos, então, extrair o numerador e denominador da fração para as suas
 próprias funções:
 
 \begin{spec}
 top n = 4*n + 2
--- Equivalente a:
+bot n = n + 2
+\end{spec}
+\indent São equivalentes a:
+\begin{spec}
 top 0 = 2
 top (n + 1) = 4 + top n
 \end{spec}
-
 \begin{spec}
-bot n = n + 2
--- Equivalente a
 bot 0 = 2
 bot (n + 1) = 1 + bot n
 \end{spec}
 
-Podemos definir todas as funções necessárias para utilizar a regra de algibeira:
+Assim, podemos definir todas as funções necessárias para utilizar a regra de algibeira:
 
 \begin{spec}
 cat 0 = 1
@@ -1355,7 +1365,7 @@ top 0 = 2
 top (n + 1) = 4 + top n
 bot 0 = 2
 bot (n + 1) = 1 + bot n
-\end{code}
+\end{spec}
 
 Aplicando a regra de algibeira chegamos então à solução:
 
