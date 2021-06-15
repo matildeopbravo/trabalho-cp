@@ -3,9 +3,7 @@
 \usepackage{palatino}
 \usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
 \usepackage{graphicx}
-\usepackage{cp2021t}
-\usepackage{subcaption}
-\usepackage{adjustbox}
+\usepackage{cp2021t} \usepackage{subcaption} \usepackage{adjustbox}
 \usepackage{color}
 \definecolor{red}{RGB}{255,  0,  0}
 \definecolor{blue}{RGB}{0,0,255}
@@ -1464,7 +1462,11 @@ cat = prj . for loop inic where
 \end{eqnarray*}
 
 
+<<<<<<< HEAD
 \begin{code}
+=======
+\begin {code}
+>>>>>>> 4a10f19b61c94e52435a207f84ad0b3b22445075
 calcLine :: NPoint -> (NPoint -> OverTime NPoint)
 calcLine = cataList (either (const (const nil)) g) where
    g :: (Rational, NPoint -> OverTime NPoint) -> (NPoint -> OverTime NPoint)
@@ -1472,7 +1474,10 @@ calcLine = cataList (either (const (const nil)) g) where
        []     -> nil
        (x:xs) -> \z -> concat $ (sequenceA [singl . linear1d d x, f xs]) z
 \end{code}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4a10f19b61c94e52435a207f84ad0b3b22445075
 
 \begin{code}
 deCasteljau :: [NPoint] -> OverTime NPoint
@@ -1534,6 +1539,40 @@ avg_aux = cataSList (either (split id one) (split k (succ . p2 . p2)))
 \end{code}
 
 Solução para árvores de tipo \LTree:
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |LTree Num|
+           \ar[d]_-{|split avg length|}
+&
+    |Num + LTree Num| \times |LTree Num|
+           \ar[d]^{|id| + |(split avg length)|^{2}}
+           \ar[l]_-{|inNat|}
+\\
+     |Num| \times |Nat0|
+&
+     |Num| + ((|Num| \times |Nat0|) \times (|Num| \times |Nat0|))
+           \ar[l]^-{|g|}
+}
+\end{eqnarray*}
+
+sendo \begin{code} avg :: LTree Num -> Num \end{code} e \begin{code} length :: LTree A -> Nat0 \end{code}
+ao aplicar o functor de Ltrees  \textbf{F} \begin{code}(split avg length)\end{code}
+Sabemos que o tipo do resultado desta aplicação será:
+\begin{Code}
+     Num + ((Num \times Nat0) \times (Num \times Nat0))
+\end{Code}
+
+Sendo que o segundo operando da soma de tipos é um produto de tipos em que cada operando é constituido por
+um par de (média, tamanho). Desta forma já sabemos como descrever o gene deste catamorfismo.
+O primeiro operando do either é para o caso em que se trata de uma folha. Ou seja o resultado será um par com
+o número e length 1. Ou seja a função é \begin{code}(split id one)\end{code} No caso de se tratar de fork então calculamos o primeiro elemento do
+par resultado aplicando a função k, que através de dois pares com informação das médias e números de elementos calcula a média
+resultante. O segundo elemento do par resultado é calculado através da soma dos tamanhos.
+
+
+
+
 \begin{code}
 avgLTree = p1.cataLTree gene where
     gene = either (split id one) (split k (add . (p2 >< p2)))
