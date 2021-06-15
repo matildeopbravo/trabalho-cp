@@ -1275,6 +1275,31 @@ top 0 = 1
 top (n + 1) = (2 * n * (2 * n - 1)) * (top n)
 \end{spec}
 
+Utilizando isto, conseguimos determinar então uma função final que calcula o valor final:
+
+\begin{spec}
+cat n = (top n) `div` ((n + 1) * (bot n))
+\end{spec}
+
+Podemos definir todas as funções necessárias para utilizar a regra de algibeira:
+
+\begin{spec}
+bot 0 = 1
+bot (n + 1) = (bot n) * (s n) * (s n)
+top 0 = 1
+top (n + 1) = (2 * (s n) * (2 * (s n) - 1)) * (top n)
+s 0 = 1
+s (n + 1) = 1 + s n
+\end{spec}
+
+Aplicando a regra de algibeira chegamos então à solução apresentada:
+
+\begin{spec}
+cat = prj . for loop inic where
+  loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
+  inic = (1, 1, 1)
+  prj (top, bot, n) = (top `div` (n * bot))
+\begin{spec}
 
 \subsection*{Problema 3}
 
@@ -1359,6 +1384,11 @@ avgLTree = p1.cataLTree gene where
 \subsection*{Problema 5}
 Inserir em baixo o código \Fsharp\ desenvolvido, entre \verb!\begin{verbatim}! e \verb!\end{verbatim}!:
 module BTree
+
+F# mostrou ser uma linguagem bastante semelhante a Haskell, sendo a diferença
+principal a sintaxe (por exemplo, requirir o uso de \textit{let} antes da
+definição de funções). A parte mais difícil desta "tradução" foi a diferença
+na omissão de argumentos, algo que, em geral, não é possível em F#.
 
 \begin{verbatim}
 open Cp
