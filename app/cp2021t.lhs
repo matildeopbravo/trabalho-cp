@@ -702,7 +702,7 @@ Verifique as suas funções testando a propriedade seguinte:
 A média de uma lista não vazia e de uma \LTree\ com os mesmos elementos coincide,
 a menos de um erro de 0.1 milésimas:
 \begin{code}
-prop_avg :: [Double] -> Property
+prop_avg :: Ord a => [a] -> Property
 prop_avg = nonempty .==>. diff .<=. const 0.000001 where
    diff l = avg l - (avgLTree . genLTree) l
    genLTree = anaLTree lsplit
@@ -1015,7 +1015,7 @@ sd = p2 . cataExpAr sd_gen
 ad :: Floating a => a -> ExpAr a -> a
 ad v = p2 . cataExpAr (ad_gen v)
 \end{code}
-
+Definir:
 
 \subsubsection*{outExpAr}
 \par
@@ -1158,12 +1158,12 @@ resolução até este momento:
            \ar[d]_-{|cataExpAr (gene)|}
            \ar[r]_-{|outExpAr|}
 &
-    |() + (A + ((BinOp, (ExpAr a, ExpAr a)) + (UnOp, ExpAr a)))|
+    |1 + (A + ((BinOp, (ExpAr a, ExpAr a)) + (UnOp, ExpAr a)))|
            \ar[d]^-{|recExpAr (cataExpAr (gene))|}
 \\
      |(Floating) C|
 &
-     |() + (A + ((BinOp,(C,C) + (UnOp, C))))|
+     |1 + (A + ((BinOp,(C,C) + (UnOp, C))))|
            \ar[l]^-{gene}
 }
 \end{eqnarray*}
@@ -1178,6 +1178,7 @@ recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
 
 
 \end{code}
+
 \subsubsection*{g_eval_exp}
 
 \begin{code}
@@ -1190,6 +1191,7 @@ g_eval_exp a = either (const a) resto where
   un(E,c) = expd c
 
 \end{code}
+
 \subsubsection*{clean}
 
 \begin{code}
@@ -1204,6 +1206,7 @@ clean (Bin op a b)    | (op == Product) && (a == (N 0) || b == (N 0))  =  i2(i1(
 gopt a = g_eval_exp a
 \end{code}
 
+\subsection*{sd\_gen}
 \begin{code}
 sd_gen :: Floating a =>
     Either () (Either a (Either (BinOp, ((ExpAr a, ExpAr a), (ExpAr a, ExpAr a))) (UnOp, (ExpAr a, ExpAr a)))) -> (ExpAr a, ExpAr a)
@@ -1217,8 +1220,8 @@ sd_gen = either (split (const X) (N . (const 1))) resto where
   --(a,b) originais (c,b) derivadas
 \end{code}
 
+\subsection*{ad\_gen}
 \begin{code}
-
 ad_gen :: Floating a =>
     a -> Either () (Either a (Either (BinOp, ((ExpAr a, a), (ExpAr a, a))) (UnOp, (ExpAr a, a)))) -> (ExpAr a, a)
 ad_gen v = either (split (const X) (const 1)) resto where
@@ -1230,6 +1233,7 @@ ad_gen v = either (split (const X) (const 1)) resto where
   f2(E,(a,b)) = (Un E a, (expd (eval_exp v a)) * b )
 
 \end{code}
+
 
 \subsection*{Problema 2}
 Definir
@@ -1283,14 +1287,14 @@ cat n = (top n) `div` ((n + 1) * (bot n))
 
 Podemos definir todas as funções necessárias para utilizar a regra de algibeira:
 
-\begin{spec}
+\begin{code}
 bot 0 = 1
 bot (n + 1) = (bot n) * (s n) * (s n)
 top 0 = 1
 top (n + 1) = (2 * (s n) * (2 * (s n) - 1)) * (top n)
 s 0 = 1
 s (n + 1) = 1 + s n
-\end{spec}
+\end{code}
 
 Aplicando a regra de algibeira chegamos então à solução apresentada:
 
@@ -1299,7 +1303,8 @@ cat = prj . for loop inic where
   loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
   inic = (1, 1, 1)
   prj (top, bot, n) = (top `div` (n * bot))
-\begin{spec}
+\end{spec}
+
 
 \subsection*{Problema 3}
 
@@ -1333,7 +1338,6 @@ Solução para listas não vazias:
 \begin{code}
 avg = p1.avg_aux
 \end{code}
-
 
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -1369,6 +1373,7 @@ avg_aux = cataSList (either (split id one) (split k (succ . p2 . p2)))
             where
                 c' = fromIntegral c
 \end{code}
+
 Solução para árvores de tipo \LTree:
 \begin{code}
 avgLTree = p1.cataLTree gene where
@@ -1381,14 +1386,15 @@ avgLTree = p1.cataLTree gene where
 
 \end{code}
 
+
 \subsection*{Problema 5}
 Inserir em baixo o código \Fsharp\ desenvolvido, entre \verb!\begin{verbatim}! e \verb!\end{verbatim}!:
-module BTree
+module BTree.
 
-F# mostrou ser uma linguagem bastante semelhante a Haskell, sendo a diferença
+\Fsharp\  mostrou ser uma linguagem bastante semelhante a Haskell, sendo a diferença
 principal a sintaxe (por exemplo, requirir o uso de \textit{let} antes da
 definição de funções). A parte mais difícil desta "tradução" foi a diferença
-na omissão de argumentos, algo que, em geral, não é possível em F#.
+na omissão de argumentos, algo que, em geral, não é possível em \Fsharp\ .
 
 \begin{verbatim}
 open Cp
