@@ -1470,6 +1470,32 @@ calcLine = cataList (either (const (const nil)) g) where
        (x:xs) -> \z -> concat $ (sequenceA [singl . linear1d d x, f xs]) z
 \end{code}
 
+O raciocínio para este exercício foi dividir a função numa fase de divisão/criação
+para chegar numa estrutura intermédia. Sendo que a partir desta estrutura intermédia 
+se aplica uma fase de conquista, em que se vai consumindo a estrutura intermédia para
+obter o resultado de tipo |Overtime Npoint|.
+
+O objetivo da fase de divisão era em primeiro lugar, assumir que uma lista vazia de Npoints
+seria interpretado na estrutura intermediária como um Npoint de 0 dimensões, que uma lista
+que contém um Npoint seria representado na estrutura intermédia como apenas um Npoint. E que
+uma lista de Npoints seria transformada num par de listas. Um elemento do par seria o |init|
+da lista original e outro a |tail| da original também.
+Desta forma conseguimos chegar à função
+
+|divide :: Npoint|$^{*}$ \rightarrow |Npoint + (Npoint|$^{*} \times $|Npoint|$^{*}$)
+
+No entanto, percebemos imediatamente que a função de divide vai levar ao 
+bifuntor \textbf{B}|(Npoint, Npoint|$^{*}$), sendo este o bifuntor das LTrees.
+Ou seja, o anamorfismo com o gene divide, vai construir uma LTree.
+Com esta estrutura intermédia definida, podemos "conquistar". O objetivo agora 
+é encontrar uma função que consuma esta estrutura. Sendo esta função um catamorfismo
+sobre LTrees falta apenas definir um gene. Pela generalização em problemas de catamorfismos
+facilmente chegamos ao gene 
+
+\begin{code}
+conquer = either const quer
+\end{code}
+
 \begin{code}
 deCasteljau :: [NPoint] -> OverTime NPoint
 deCasteljau = hyloAlgForm alg coalg where
