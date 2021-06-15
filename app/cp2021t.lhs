@@ -1521,6 +1521,62 @@ avg = p1.avg_aux
 \end{code}
 
 \begin{eqnarray*}
+\start
+    | (split avg length) = cataList (either b q) |
+%
+\just\equiv{b = |split b1 b2| , q = |split q1 q2| e Lei Troca}
+%
+    | lcbr ( split avg length = cataList (split (either b1 q1) (either b2 q2)) )|
+%
+\just\equiv{ Fokkinga }
+%
+    |lcbr(
+          avg . in = either b1 q1 . F(split avg leng)
+    )(
+          length . in = either b2 q2 . F(split avg length)
+    )|
+%
+\just\equiv{Def functor List, Def Absorção-+, Def inList, Def Absorção-+, Def Eq-+}
+%
+    |lcbr(
+          avg . singl = b1 . id
+    )(
+          avg . cons = q1 . (id X (split avg length))
+    )(    
+          length . singl = b2 . id
+    )(   
+          length . cons = q2 . (id X (split avg length))
+    )|
+%
+\just\equiv{Point-Wise}
+%
+    |lcbr(
+         avg [x] = b1
+    )(
+         avg (h:t) = q1 (id h, (split avg length) t)
+    )(    
+          length [x] = b2
+    )(   
+          length (h:t) = q2  (id h, (split avg length) t)
+    )|
+%
+\just\equiv{Def id, b1 = x, b2 = one, q1 = k, q2 = succ . p2 . p2 }
+%
+
+    |lcbr(
+         avg [x] = one
+    )(
+         avg (h:t) = k (h, (split avg length) t)
+    )(    
+          length [x] = x
+    )(   
+          length (h:t) = (succ . p2 . p2) (h, (split avg length))
+    )|
+
+\qed
+\end{eqnarray*}
+
+\begin{eqnarray*}
 \xymatrix@@C=2cm{
     |A|^{+}
            \ar[d]_-{|split avg length|}
@@ -1539,7 +1595,6 @@ avg = p1.avg_aux
 A partir do diagrama facilmente chegamos ao gene. Caso a sequência seja unitária então o
 resultado é o próprio número com length de 1. Se não, aplicamos a definição de avg e aplicamos
 a função succ à length que já tinha sido calculada.
-
 
 \begin{code}
 outSList([a]) = i1(a)
