@@ -1125,6 +1125,28 @@ Solução para listas não vazias:
 avg = p1.avg_aux
 \end{code}
 
+
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |A|^{+}
+           \ar[d]_-{|split avg length|}
+&
+    |A + A| \times |A|^{+}
+           \ar[d]^{|id + (split avg length)|}
+           \ar[l]_-{|inNat|}
+\\
+     |A| \times |Nat0|
+&
+     |A + A| \times (|A| \times |Nat0|)
+           \ar[l]^-{|g|}
+}
+\end{eqnarray*}
+
+A partir do diagrama facilmente chegamos ao gene. Caso a sequência seja unitária então o
+resultado é o próprio número com length de 1. Se não, aplicamos a definição de avg e aplicamos
+a função succ à length que já tinha sido calculada. 
+
+
 \begin{code}
 outSList([a]) = i1(a)
 outSList(a:b) = i2(a,b)
