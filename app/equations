@@ -1,0 +1,102 @@
+
+\just\equiv{def-inExpAr}
+%
+    |outExpAr . either (const x) (num_ops) = id|
+%
+\just\equiv{ fusão-|+| }
+%
+    |either (outExpAr . const x) (outExpAr . num_ops) = id|
+%
+\just\equiv{ Universal-|+|, Natural-id}
+%
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          outExpAr . num_ops = i2
+    )|
+
+%
+\just\equiv{def-num_ops}
+%
+
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          outExpAr . either (N) (ops) = i2
+    )|
+
+%
+\just\equiv{fusão-|+|}
+%
+
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          either (outExpAr . N) (outExpAr . ops) = i2
+    )|
+
+%
+\just\equiv{Universal-|+|}
+%
+
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          outExpAr . N = i2 . i1
+    )(
+          outExpAr . ops = i2 . i2
+     )|
+
+%
+\just\equiv{def-ops}
+%
+
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          outExpAr . N = i2 . i1
+    )(
+          outExpAr . either (bin) (uncurry Un) = i2 . i2
+     )|
+
+%
+\just\equiv{fusao-|+|}
+%
+
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          outExpAr . N = i2 . i1
+    )(
+          either (outExpAr . bin) (outExpAr . (uncurry Un)) = i2 . i2
+     )|
+
+%
+\just\equiv{universal-|+|}
+%
+
+    |lcbr(
+          outExpAr . (const x) = i1
+    )(
+          outExpAr . N = i2 . i1
+    )(
+          outExpAr . bin  = i2 . i2 . i2
+    )(
+          outExpAr . (uncurry Un) = i2 . i2 .i2
+    )|
+
+%
+\just\equiv{introdução de variáveis-|+|, def-comp}
+%
+
+    |lcbr(
+          outExpAr (const x a) = i1(a)
+    )(
+          outExpAr (N a) = i2 (i1 (a))
+    )(
+          outExpAr (bin a)  = i2 (i2 (i2 (a)))
+    )(
+          outExpAr (uncurry Un a) = i2 (i2 (i2 (a)))
+    )|
+
+%

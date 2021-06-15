@@ -127,9 +127,9 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 999 (preencher)
+\textbf{Grupo} nr. & 95
 \\\hline
-a00000 & Henrique Costa
+a93325 & Henrique Costa
 \\
 a93163 & José Pedro Fernandes
 \\
@@ -1015,7 +1015,118 @@ sd = p2 . cataExpAr sd_gen
 ad :: Floating a => a -> ExpAr a -> a
 ad v = p2 . cataExpAr (ad_gen v)
 \end{code}
-Definir:
+
+
+\subsubsection*{outExpAr}
+\par
+A implementação desta função é deduzida a partir da própria propriedade
+enunciada:
+
+\linebreak
+\linebreak
+\textit{outExpAr . inExpAr .==. id}
+
+\linebreak
+\linebreak
+
+\par
+Deste modo, para descobrirmos \textbf{outExpAr} basta fazermos sua composição
+com \textbf{inExpAr} e igualarmos ao \textbf{id}. Aplicando algumas propriedades,
+    temos:
+
+\begin{eqnarray*}
+\start
+| outExpAr . inExpAr = id |
+%
+\just\equiv{def-inExpAr}
+%
+    |outExpAr . either (const X) (num_ops) = id|
+%
+\just\equiv{ fusão-|+| }
+%
+    |either (outExpAr . const X) (outExpAr . num_ops) = id|
+%
+\just\equiv{ Universal-|+|, Natural-id}
+%
+    |lcbr(
+          outExpAr . (const X) = i1
+    )(
+          outExpAr . num_ops = i2
+    )|
+%
+\just\equiv{def-|num_ops|}
+%
+    |lcbr(
+          outExpAr . (const X) = i1
+    )(
+          outExpAr . (either (N) (ops)) = i2
+    )|
+%
+\just\equiv{fusão-|+|}
+%
+    |lcbr(
+          outExpAr . (const X) = i1
+    )(
+          either (outExpAr . N) (outExpAr . ops) = i2
+    )|
+%
+\just\equiv{Universal-|+|}
+%
+\left\{
+   \begin{array}{lll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |outExpAr . ops = i2 . i2|
+  \end{array}
+\right.
+%
+\just\equiv{def-ops}
+%
+\left\{
+   \begin{array}{lll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |outExpAr . (either (bin) (uncurry Un)) = i2 . i2|
+  \end{array}
+\right.
+%
+\just\equiv{fusao-|+|}
+%
+\left\{
+   \begin{array}{lll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |either (outExpAr . bin) (outExpAr . (uncurry Un)) = i2 . i2|
+  \end{array}
+\right.
+%
+\just\equiv{universal-|+|}
+%
+\left\{
+   \begin{array}{llll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |outExpAr . bin = i2 . i2 . i1|\\
+      |outExpAr . (uncurry Un) = i2 . i2 .i2|
+  \end{array}
+\right.
+%
+\just\equiv{introdução de variáveis-|+|, def-comp}
+%
+\left\{
+   \begin{array}{llll}
+      |outExpAr (const X a) = i1(a)|\\
+      |outExpAr (N a) = i2 (i1(a))|\\
+      |outExpAr (bin a) = i2 (i2 (i1 (a)))|\\
+      |outExpAr (uncurry Un a) = i2(i2(i2(a)))|
+  \end{array}
+\right.
+%
+\qed
+\end{eqnarray*}
+
+Transformando esse sistema de equações para notação de \textbf{Haskell}, temos a
+solução:
 
 \begin{code}
 outExpAr :: ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
@@ -1023,13 +1134,53 @@ outExpAr (X) = i1 ()
 outExpAr (N a) = i2 (i1 (a))
 outExpAr (Un op a) = i2 (i2 (i2 (op,a)))
 outExpAr (Bin op a b) = i2 (i2 (i1 (op, (a , b))))
+\end{code}
 
----
+\subsubsection*{recExpAr}
+\par
+Sabendo agora o \textit{tipo de saída do outExpAr}, passamos a conhecer o
+\textit{tipo de entrada da função recExpAr}. Como tal função será a
+responsável por chamar recursivamente o catamorfismo para as "\textit{ExpAr's}"
+presentes no tipo de entrada, basta separarmos a função nos casos específicos em
+que temos de invocar o catamorfismo recursivamente, isto é, caso o tipo de
+entrada for do tipo \textbf{(BinOp,(ExpAr a,ExpAr a)} ou  \textbf{(UnOp,ExpAr a}. Caso
+            contrário, não haverá recursividade e basta invocarmos o \textbf{id}
+
+\linebreak
+Para uma melhor ilustração deste processo, segue um diagrama do estado da
+resolução até este momento:
+
+\par
+
+\begin{eqnarray*}
+\xymatrix@@C=3cm{
+    |ExpAr a|
+           \ar[d]_-{|cataExpAr (gene)|}
+           \ar[r]_-{|outExpAr|}
+&
+    |() + (A + ((BinOp, (ExpAr a, ExpAr a)) + (UnOp, ExpAr a)))|
+           \ar[d]^-{|recExpAr (cataExpAr (gene))|}
+\\
+     |(Floating) C|
+&
+     |() + (A + ((BinOp,(C,C) + (UnOp, C))))|
+           \ar[l]^-{gene}
+}
+\end{eqnarray*}
+
+Concluindo, temos então recExpAr como:
+
+\begin{code}
+
 recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
   f1 f (op,(a,b)) = (op, (f a, f b))
   f2 f (op,a) = (op, f a)
 
----
+
+\end{code}
+\subsubsection*{g_eval_exp}
+
+\begin{code}
 g_eval_exp a = either (const a) resto where
   resto = either id resto2
   resto2 = either bin un where
@@ -1038,7 +1189,10 @@ g_eval_exp a = either (const a) resto where
   un(Negate,c) = (-1) * c
   un(E,c) = expd c
 
----
+\end{code}
+\subsubsection*{clean}
+
+\begin{code}
 clean :: (Floating a, Eq a) => ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
 clean (X) = i1 ()
 clean (N a) = i2 (i1 (a))
@@ -1046,7 +1200,7 @@ clean (Un op a) |(op == E) && a == (N 0) = i2(i1(1))
                 | otherwise = i2 (i2 (i2 (op,a)))
 clean (Bin op a b)    | (op == Product) && (a == (N 0) || b == (N 0))  =  i2(i1(0))
                       | otherwise = i2 (i2 (i1 (op, (a , b))))
----
+
 gopt a = g_eval_exp a
 \end{code}
 
@@ -1065,7 +1219,7 @@ sd_gen = either (split (const X) (N . (const 1))) resto where
 
 \begin{code}
 
-ad_gen :: Floating a => 
+ad_gen :: Floating a =>
     a -> Either () (Either a (Either (BinOp, ((ExpAr a, a), (ExpAr a, a))) (UnOp, (ExpAr a, a)))) -> (ExpAr a, a)
 ad_gen v = either (split (const X) (const 1)) resto where
   resto = either (split (N . id) (const 0)) resto2 where
@@ -1174,7 +1328,7 @@ avg = p1.avg_aux
 
 A partir do diagrama facilmente chegamos ao gene. Caso a sequência seja unitária então o
 resultado é o próprio número com length de 1. Se não, aplicamos a definição de avg e aplicamos
-a função succ à length que já tinha sido calculada. 
+a função succ à length que já tinha sido calculada.
 
 
 \begin{code}
@@ -1273,7 +1427,7 @@ let rec union a b =
     | [] -> a
     | h::t when List.contains h a -> union a t
     | h::t -> h::(union a t)
-    
+
 let tunion (a, (l, r)) = union (List.map (fun x -> a::x) l) (List.map (fun x -> a::x) r)
 let traces x = cataBTree (either (konst [[]]) tunion) x
 
