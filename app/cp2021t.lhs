@@ -1188,11 +1188,11 @@ envolvidos na questão.
 Para os casos mais simples, isto é, a função receber um
 termo \textit{etiquetado somente à esquerda}, basta retornar o valor numérico
 associado ao gene. Por outras palavras, estamos a substituir uma constante
-\textbf{X} por um dado valor. Como o gene recebe uma união disjunta, o seu
+\textbf{X} por um dado valor. Como o gene parte de uma união disjunta, o seu
 corpo principal será composto por um \textbf{either}. E, como um \textbf{either}
 possui funções internamente para processar seu argumento, devemos inserir a
 função \textbf{const value} para representar o caso mencionado anteriormente
-(donde \textit{value} representa o valor da variável \textit{x}). Outro caso
+(onde \textit{value} representa o valor da variável \textit{x}). Outro caso
 simples é dos \textit{inputs etiquetados à direita e à esquerda}, isto é, que
 chegam por exemplo como \textit{i2(i1(input))}. Este será o caso em que
 estaremos presente um número por si só, e então basta aplicar a identidade. De resto é feito \textbf{pattern matching} para os pares correspondentes a
@@ -1286,13 +1286,14 @@ sd_gen = either (split (const X) (N . (const 1))) resto where
 
 A diferença desta função (em comparação com a anterior) consiste no
 processamento da expressão derivada durante o catamorfismo. Ou seja, reduzimos
-drasticamente consumo de memória, tornando a derviação mais eficiente. Para isso
+drasticamente consumo de memória, tornando a derivação mais eficiente. Para isso
 ser feito, tal gene retornará um par composto pela expressão original (à
 semelhança do gene anterior) e a derivada já calculada. Logo, teremos uma
 construção deste gene muito parecida com a do problema anterior, diferindo na
 utilização dos operadores aritméticos para o cálculo da derivada. Utilizamos a
 função \textbf{eval\_exp} dos problemas anteriores para calcular o valor da
-derivada de uma expressãp.
+derivada de uma expressão.
+
 
 \begin{code}
 ad_gen :: Floating a =>
@@ -1309,22 +1310,9 @@ ad_gen v = either (split (const X) (const 1)) resto where
 
 
 \subsection*{Problema 2}
-Definir
-\begin{code}
-loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
-inic = (1, 1, 1)
-prj (top, bot, n) = (top `div` (n * bot))
-\end{code}
-por forma a que
-\begin{code}
-cat = prj . (for loop inic)
-\end{code}
-seja a função pretendida.
-\textbf{NB}: usar divisão inteira.
-Apresentar de seguida a justificação da solução encontrada.
 
 Começamos por separar o cálculo em duas partes, a parte do numerador e a do
-denominador. Se nos forcamos no denominador, $(n + 1)!(n!)$, conseguimos
+denominador. Se nos focarmos no denominador, $(n + 1)!(n!)$, conseguimos
 determinar matematicamente uma forma de o calcular:
 
 \begin{math}
@@ -1462,11 +1450,7 @@ cat = prj . for loop inic where
 \end{eqnarray*}
 
 
-<<<<<<< HEAD
 \begin{code}
-=======
-\begin {code}
->>>>>>> 4a10f19b61c94e52435a207f84ad0b3b22445075
 calcLine :: NPoint -> (NPoint -> OverTime NPoint)
 calcLine = cataList (either (const (const nil)) g) where
    g :: (Rational, NPoint -> OverTime NPoint) -> (NPoint -> OverTime NPoint)
@@ -1474,10 +1458,6 @@ calcLine = cataList (either (const (const nil)) g) where
        []     -> nil
        (x:xs) -> \z -> concat $ (sequenceA [singl . linear1d d x, f xs]) z
 \end{code}
-<<<<<<< HEAD
-
-=======
->>>>>>> 4a10f19b61c94e52435a207f84ad0b3b22445075
 
 \begin{code}
 deCasteljau :: [NPoint] -> OverTime NPoint
@@ -1556,12 +1536,13 @@ Solução para árvores de tipo \LTree:
 }
 \end{eqnarray*}
 
-sendo \begin{code} avg :: LTree Num -> Num \end{code} e \begin{code} length :: LTree A -> Nat0 \end{code}
+sendo
+\begin{code} avg :: LTree Num -> Num \end{code} e \begin{code} length :: LTree A -> Nat0 \end{code}
 ao aplicar o functor de Ltrees  \textbf{F} \begin{code}(split avg length)\end{code}
 Sabemos que o tipo do resultado desta aplicação será:
 \begin{Code}
      Num + ((Num \times Nat0) \times (Num \times Nat0))
-\end{Code}
+\end{code}
 
 Sendo que o segundo operando da soma de tipos é um produto de tipos em que cada operando é constituido por
 um par de (média, tamanho). Desta forma já sabemos como descrever o gene deste catamorfismo.
