@@ -1143,7 +1143,7 @@ Sabendo agora o \textit{tipo de saída do outExpAr}, passamos a conhecer o
 responsável por chamar recursivamente o catamorfismo para as "\textit{ExpAr's}"
 presentes no tipo de entrada, basta separarmos a função nos casos específicos em
 que temos de invocar o catamorfismo recursivamente, isto é, caso o tipo de
-entrada for do tipo \textbf{(BinOp,(ExpAr a,ExpAr a)} ou  \textbf{(UnOp,ExpAr a}. Caso
+entrada for do tipo \textbf{(BinOp,(ExpAr a,ExpAr a)} ou  \textbf{(UnOp,ExpAr a)}. Caso
             contrário, não haverá recursividade e basta invocarmos o \textbf{id}
 
 \linebreak
@@ -1179,7 +1179,32 @@ recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
 
 \end{code}
 
-\subsubsection*{g_eval_exp}
+\subsubsection*{g\_eval\_exp}
+
+Estamos agora perante o \textbf{gene} mencionado no diagrama anterior. Este gene
+terá o \textit{tipo de entrada} correspondente ao tipo de saída da função
+\textbf{recExpAr} que consiste basicamente nos \textit{termos de uma expressão} já
+processados atomicamente, prontos para serem consumidos pelos operadores matemáticos
+envolvidos na questão.
+
+Para os casos mais simples, isto é, a função receber um
+termo \textit{etiquetado somente à esquerda}, basta retornar o valor numérico
+associado ao gene. Por outras palavras, estamos a substituir uma constante
+\textbf{X} por um dado valor. Como o gene recebe uma união disjunta, o seu
+corpo principal será composto por um \textbf{either}. E, como um \textbf{either}
+possui funções internamente para processar seu argumento, devemos inserir a
+função \textbf{const value} para representar o caso mencionado anteriormente
+(donde \textit{value} representa o valor da variável \textit{x}). Outro caso
+simples é dos \textit{inputs etiquetados à direita e à esquerda}, isto é, que
+chegam por exemplo como \textit{i2(i1(input))}. Este será o caso em que
+estaremos presente um número por si só, e então basta aplicar a identidade. De resto é feito \textbf{pattern matching} para os pares correspondentes a
+\textit{(BinOp,(value1,value2))} ou \textit{(Unop,value)} para de seguida aplicar o
+operador respetivo. Uma observação a ser feita é que nesta altura do
+"catamorfismo" estamos já a lidar com números em concreto, e por isso aplicamos
+as operações básicas da aritmética. Para a exponenciação utilizamos a função
+\textbf{expd} disponibilizada.
+
+Segue então o gene proposto:
 
 \begin{code}
 g_eval_exp a = either (const a) resto where
@@ -1192,7 +1217,29 @@ g_eval_exp a = either (const a) resto where
 
 \end{code}
 
-\subsubsection*{clean}
+\subsubsection*{clean e gopt}
+
+Perante este hilomorfismo proposto no enunciado para optimizar o cálculo de uma
+expressão aritmética, consluímos que só seria possível realizar tal optimização
+à nível do gene \textbf{clean} do anamorfismo. Isto porque apenas durante tal
+gene temos as entidades suficientes que são passíveis de serem optimizadas. Tal
+gene \textbf{clean} recebe uma \textbf{ExpAr a} como parâmetro, e para tirarmos
+partido dos elementos absorventes das operações aritméticas, consideramos os
+seguintes casos:
+
+\begin{itemize}
+\item	Parâmetro é um operador unário de exponenciação e a expressão aritmética
+associada a ele é o número zero, isto é, \textbf{N 0}. Por outras palavras,
+          qualquer número elevado à zero é 1, sendo este um caso de optimização.
+\item	Parâmetro é o operador binário Product e uma de suas expressões
+associadas é o número zero, isto é, \textbf{N 0}. Nesse caso o resultado pode
+ser optimizado para o número zero, pois qualquer número à multiplicar por zero é
+0.
+\end{itemize}
+
+Como \textbf{gopt} terá o mesmo tipo de g\_eval\_exp , não há forma de
+otimizar algo nesta etapa do hilomorfismo por conta de já estarmos perante os
+valores em concreto envolvidos nas operações aritméticas.
 
 \begin{code}
 clean :: (Floating a, Eq a) => ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
@@ -1207,9 +1254,26 @@ gopt a = g_eval_exp a
 \end{code}
 
 \subsection*{sd\_gen}
+
+A implementação do gene do catamorfismo responsável por calcular a derivada de
+uma expressão, baseia-se nomeadamente nas próprias regras de derivação
+enunciadas. Um dos tópicos mais relevantes aqui é o facto de lidarmos com
+derivadas e isto implicar: \textit{manter o conhecimento da expressão original}.
+Por outras palavras, muitas das regras de derivação envolvem a continuação da
+expressão original nos termos derivados e esse mecanismo está presente nos tipos
+de entrada e saída de \textbf{sd\_gen}. Tal função deve retornar um par
+   correspondente há expressão original e a expressão derivada, para assim ter
+   no gene do catamorfismo as ferramentas necessárias de derivação. Por conta
+   disto, do lado do tipo de entrada, encontramos também pares de elementos
+   (expressão original, expressão derivada),
+   seja nos casos mais simples (número ou constante), seja como parâmetros dos
+   operadores binários e unários. Assim, basta apenas aplicar as regras de
+   derivação manuseando as componentes originais e as já derivadas:
+
 \begin{code}
 sd_gen :: Floating a =>
-    Either () (Either a (Either (BinOp, ((ExpAr a, ExpAr a), (ExpAr a, ExpAr a))) (UnOp, (ExpAr a, ExpAr a)))) -> (ExpAr a, ExpAr a)
+    Either () (Either a (Either (BinOp, ((ExpAr a, ExpAr a), (ExpAr a, ExpAr a))) (UnOp, (ExpAr a, ExpAr a))))
+    -> (ExpAr a, ExpAr a)
 sd_gen = either (split (const X) (N . (const 1))) resto where
   resto = either (split (N . id) (N . (const 0))) resto2 where
   resto2 = either f1 f2 where
@@ -1221,6 +1285,17 @@ sd_gen = either (split (const X) (N . (const 1))) resto where
 \end{code}
 
 \subsection*{ad\_gen}
+
+A diferença desta função (em comparação com a anterior) consiste no
+processamento da expressão derivada durante o catamorfismo. Ou seja, reduzimos
+drasticamente consumo de memória, tornando a derviação mais eficiente. Para isso
+ser feito, tal gene retornará um par composto pela expressão original (à
+semelhança do gene anterior) e a derivada já calculada. Logo, teremos uma
+construção deste gene muito parecida com a do problema anterior, diferindo na
+utilização dos operadores aritméticos para o cálculo da derivada. Utilizamos a
+função \textbf{eval\_exp} dos problemas anteriores para calcular o valor da
+derivada de uma expressãp.
+
 \begin{code}
 ad_gen :: Floating a =>
     a -> Either () (Either a (Either (BinOp, ((ExpAr a, a), (ExpAr a, a))) (UnOp, (ExpAr a, a)))) -> (ExpAr a, a)
@@ -1308,6 +1383,87 @@ cat = prj . for loop inic where
 
 \subsection*{Problema 3}
 
+\begin{eqnarray*}
+\start
+    |lcbr(
+          calcLine [] = const nil
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{nil x = []}
+%
+    |lcbr(
+          calcLine (nil x) = const nil
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{Def-comp}
+%
+    |lcbr(
+          (calcLine . nil ) x = const nil
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{Def-const}
+%
+    |lcbr(
+          (calcLine . nil ) x = (const (const nil)) x
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{nil x = []; def-comp, def-const, cons(h,t) = h:t}
+%
+    |lcbr(
+          (calcLine . nil) x = const (const nil) x
+    )(
+          (calcLine . cons) (p,x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{def curry, Igualdade extensional}
+%
+    |lcbr(
+          calcLine . nil = const (const nil)
+    )(
+          (calcLine . cons) (p,x) = g(p , calcLine x)
+    )|
+%
+\just\equiv{Def-x, def-id, igualdade extensional, def-comp}
+%
+    |lcbr(
+          calcLine . nil = const (const nil)
+    )(
+          calcLine . cons = f . (id x calcLine)
+    )|
+%
+\just\equiv{Eq-+}
+%
+    | [calcLine . nil, calcLine . cons] = [const(const nil), g . (id ><
+            calcLine)] |
+%
+\just\equiv{Fusão-+}
+%
+| calcLine . [nil, cons] = [ const (const nil), g. (id >< calcLine)] |
+%
+\just\equiv{Nat-id, absorção-+}
+%
+| calcLine . [nil, cons] = [ const(const nil), g ] . (id + id >< calcLine) |
+%
+\just\equiv{inL = [nil,cons], F f = id + id x f}
+%
+| calcLine . [nil, cons] = [ const(const nil), g ] . F calcLine |
+%
+\just\equiv{Universal-cata}
+%
+| calcLine = cataLTree [ const(const nil), g ] |
+%
+\qed
+\end{eqnarray*}
+
+
 \begin{code}
 calcLine :: NPoint -> (NPoint -> OverTime NPoint)
 calcLine = cataList (either (const (const nil)) g) where
@@ -1315,7 +1471,10 @@ calcLine = cataList (either (const (const nil)) g) where
    g (d,f) l = case l of
        []     -> nil
        (x:xs) -> \z -> concat $ (sequenceA [singl . linear1d d x, f xs]) z
+\end{code}
 
+
+\begin{code}
 deCasteljau :: [NPoint] -> OverTime NPoint
 deCasteljau = hyloAlgForm alg coalg where
    coalg = divide
@@ -1464,12 +1623,14 @@ let rec union a b =
     | h::t when List.contains h a -> union a t
     | h::t -> h::(union a t)
 
-let tunion (a, (l, r)) = union (List.map (fun x -> a::x) l) (List.map (fun x -> a::x) r)
+let tunion (a, (l, r))
+    = union (List.map (fun x -> a::x) l) (List.map (fun x -> a::x) r)
 let traces x = cataBTree (either (konst [[]]) tunion) x
 
 // (4.6) Towers of Hanoi -------------------------------------------------------
 let present = inord
-let strategy (d, n) = if n = 0 then i1 () else i2 ((n - 1, d), ((not d, n - 1), (not d, n - 1)))
+let strategy (d, n)
+    = if n = 0 then i1 () else i2 ((n - 1, d), ((not d, n - 1), (not d, n - 1)))
 
 let hanoi x = hyloBTree present strategy x
 
@@ -1520,7 +1681,8 @@ let hanoi x = hyloBTree present strategy x
 
 // (5) Depth and balancing (using mutual recursion) --------------------------
 let baldepth n =
-    let h (a, ((b1, b2), (d1, d2))) = (b1 && b2 && abs (d1 - d2) <= 1, 1 + max d1 d2)
+    let h (a, ((b1, b2), (d1, d2)))
+            = (b1 && b2 && abs (d1 - d2) <= 1, 1 + max d1 d2)
     let f ((b1, d1), (b2, d2)) = ((b1, b2), (d1, d2))
     let g x = either (konst (true, 1)) (h << (id >< f)) x
     cataBTree g n
