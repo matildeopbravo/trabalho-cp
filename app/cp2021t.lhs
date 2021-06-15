@@ -127,15 +127,15 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-\textbf{Grupo} nr. & 999 (preencher)
+\textbf{Grupo} nr. & 95
 \\\hline
-a00000 & Henrique Costa (preencher)
+a93325 & Henrique Costa
 \\
-a22222 & José Pedro Fernandes (preencher)
+a93163 & José Pedro Fernandes
 \\
-a93246 & Matilde Bravo (preencher)
+a93246 & Matilde Bravo
 \\
-a44444 & Pedro Alves (preencher, se aplicável, ou apagar)
+a93272 & Pedro Alves
 \end{tabular}
 \end{center}
 
@@ -1017,21 +1017,184 @@ ad v = p2 . cataExpAr (ad_gen v)
 \end{code}
 Definir:
 
+\subsubsection*{outExpAr}
+\par
+A implementação desta função é deduzida a partir da própria propriedade
+enunciada:
+
+\linebreak
+\linebreak
+\textit{outExpAr . inExpAr .==. id}
+
+\linebreak
+\linebreak
+
+\par
+Deste modo, para descobrirmos \textbf{outExpAr} basta fazermos sua composição
+com \textbf{inExpAr} e igualarmos ao \textbf{id}. Aplicando algumas propriedades,
+    temos:
+
+\begin{eqnarray*}
+\start
+| outExpAr . inExpAr = id |
+%
+\just\equiv{def-inExpAr}
+%
+    |outExpAr . either (const X) (num_ops) = id|
+%
+\just\equiv{ fusão-|+| }
+%
+    |either (outExpAr . const X) (outExpAr . num_ops) = id|
+%
+\just\equiv{ Universal-|+|, Natural-id}
+%
+    |lcbr(
+          outExpAr . (const X) = i1
+    )(
+          outExpAr . num_ops = i2
+    )|
+%
+\just\equiv{def-|num_ops|}
+%
+    |lcbr(
+          outExpAr . (const X) = i1
+    )(
+          outExpAr . (either (N) (ops)) = i2
+    )|
+%
+\just\equiv{fusão-|+|}
+%
+    |lcbr(
+          outExpAr . (const X) = i1
+    )(
+          either (outExpAr . N) (outExpAr . ops) = i2
+    )|
+%
+\just\equiv{Universal-|+|}
+%
+\left\{
+   \begin{array}{lll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |outExpAr . ops = i2 . i2|
+  \end{array}
+\right.
+%
+\just\equiv{def-ops}
+%
+\left\{
+   \begin{array}{lll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |outExpAr . (either (bin) (uncurry Un)) = i2 . i2|
+  \end{array}
+\right.
+%
+\just\equiv{fusao-|+|}
+%
+\left\{
+   \begin{array}{lll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |either (outExpAr . bin) (outExpAr . (uncurry Un)) = i2 . i2|
+  \end{array}
+\right.
+%
+\just\equiv{universal-|+|}
+%
+\left\{
+   \begin{array}{llll}
+      |outExpAr . (const X) = i1|\\
+      |outExpAr . N = i2 . i1|\\
+      |outExpAr . bin = i2 . i2 . i1|\\
+      |outExpAr . (uncurry Un) = i2 . i2 .i2|
+  \end{array}
+\right.
+%
+\just\equiv{introdução de variáveis-|+|, def-comp}
+%
+\left\{
+   \begin{array}{llll}
+      |outExpAr (const X a) = i1(a)|\\
+      |outExpAr (N a) = i2 (i1(a))|\\
+      |outExpAr (bin a) = i2 (i2 (i1 (a)))|\\
+      |outExpAr (uncurry Un a) = i2(i2(i2(a)))|
+  \end{array}
+\right.
+%
+\qed
+\end{eqnarray*}
+
+Transformando esse sistema de equações para notação de \textbf{Haskell}, temos a
+solução:
+
 \begin{code}
 outExpAr :: ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
 outExpAr (X) = i1 ()
 outExpAr (N a) = i2 (i1 (a))
 outExpAr (Un op a) = i2 (i2 (i2 (op,a)))
 outExpAr (Bin op a b) = i2 (i2 (i1 (op, (a , b))))
+\end{code}
 
----
+\subsubsection*{recExpAr}
+\par
+Sabendo agora o \textit{tipo de saída do outExpAr}, passamos a conhecer o
+\textit{tipo de entrada da função recExpAr}. Como tal função será a
+responsável por chamar recursivamente o catamorfismo para as "\textit{ExpAr's}"
+presentes no tipo de entrada, basta separarmos a função nos casos específicos em
+que temos de invocar o catamorfismo recursivamente, isto é, caso o tipo de
+entrada for do tipo \textbf{(BinOp,(ExpAr a,ExpAr a)} ou  \textbf{(UnOp,ExpAr a}. Caso
+            contrário, não haverá recursividade e basta invocarmos o \textbf{id}
+
+\linebreak
+Para uma melhor ilustração deste processo, segue um diagrama do estado da
+resolução até este momento:
+
+\par
+
+\begin{eqnarray*}
+\xymatrix@@C=3cm{
+    |ExpAr a|
+           \ar[d]_-{|cataExpAr (gene)|}
+           \ar[r]_-{|outExpAr|}
+&
+    |1 + (A + ((BinOp, (ExpAr a, ExpAr a)) + (UnOp, ExpAr a)))|
+           \ar[d]^-{|recExpAr (cataExpAr (gene))|}
+\\
+     |(Floating) C|
+&
+     |1 + (A + ((BinOp,(C,C) + (UnOp, C))))|
+           \ar[l]^-{gene}
+}
+\end{eqnarray*}
+
+Concluindo, temos então recExpAr como:
+
+\begin{code}
+
 recExpAr f = id -|- (id -|- ((f1 f) -|- (f2 f))) where
   f1 f (op,(a,b)) = (op, (f a, f b))
   f2 f (op,a) = (op, f a)
 
----
-g_eval_exp = undefined
----
+
+\end{code}
+
+\subsubsection*{g_eval_exp}
+
+\begin{code}
+g_eval_exp a = either (const a) resto where
+  resto = either id resto2
+  resto2 = either bin un where
+  bin(Sum,(c,d)) = c + d
+  bin(Product,(c,d)) = c * d
+  un(Negate,c) = (-1) * c
+  un(E,c) = expd c
+
+\end{code}
+
+\subsubsection*{clean}
+
+\begin{code}
 clean :: (Floating a, Eq a) => ExpAr a -> Either () (Either a (Either (BinOp, (ExpAr a, ExpAr a)) (UnOp, ExpAr a)))
 clean (X) = i1 ()
 clean (N a) = i2 (i1 (a))
@@ -1039,26 +1202,45 @@ clean (Un op a) |(op == E) && a == (N 0) = i2(i1(1))
                 | otherwise = i2 (i2 (i2 (op,a)))
 clean (Bin op a b)    | (op == Product) && (a == (N 0) || b == (N 0))  =  i2(i1(0))
                       | otherwise = i2 (i2 (i1 (op, (a , b))))
----
-gopt = undefined
+
+gopt a = g_eval_exp a
 \end{code}
 
+\subsection*{sd\_gen}
 \begin{code}
 sd_gen :: Floating a =>
     Either () (Either a (Either (BinOp, ((ExpAr a, ExpAr a), (ExpAr a, ExpAr a))) (UnOp, (ExpAr a, ExpAr a)))) -> (ExpAr a, ExpAr a)
-sd_gen = undefined
+sd_gen = either (split (const X) (N . (const 1))) resto where
+  resto = either (split (N . id) (N . (const 0))) resto2 where
+  resto2 = either f1 f2 where
+  f1(Sum, ((a,b),(c,d))) = (Bin Sum a c, Bin Sum b d)
+  f1(Product, ((a,b),(c,d))) = (Bin Product a c, Bin Sum (Bin Product a d) (Bin Product b c))
+  f2(Negate,(a,b)) = (Un Negate a, Un Negate b)
+  f2(E,(a,b)) = (Un E a, Bin Product (Un E a) b)
+  --(a,b) originais (c,b) derivadas
 \end{code}
 
+\subsection*{ad\_gen}
 \begin{code}
-ad_gen = undefined
+ad_gen :: Floating a =>
+    a -> Either () (Either a (Either (BinOp, ((ExpAr a, a), (ExpAr a, a))) (UnOp, (ExpAr a, a)))) -> (ExpAr a, a)
+ad_gen v = either (split (const X) (const 1)) resto where
+  resto = either (split (N . id) (const 0)) resto2 where
+  resto2 = either f1 f2 where
+  f1(Sum, ((a,b),(c,d))) = (Bin Sum a c, b + d)
+  f1(Product, ((a,b),(c,d))) = (Bin Product a c, ((eval_exp v a) * d )+ (b * (eval_exp v c)))
+  f2(Negate,(a,b)) = (Un Negate a, (-1) * b)
+  f2(E,(a,b)) = (Un E a, (expd (eval_exp v a)) * b )
+
 \end{code}
+
 
 \subsection*{Problema 2}
 Definir
 \begin{code}
-loop = undefined
-inic = undefined
-prj = undefined
+loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
+inic = (1, 1, 1)
+prj (top, bot, n) = (top `div` (n * bot))
 \end{code}
 por forma a que
 \begin{code}
@@ -1068,19 +1250,169 @@ seja a função pretendida.
 \textbf{NB}: usar divisão inteira.
 Apresentar de seguida a justificação da solução encontrada.
 
-\subsection*{Problema 3}
+Começamos por separar o cálculo em duas partes, a parte do numerador e a do
+denominador. Se nos forcamos no denominador, $(n + 1)!(n!)$, conseguimos
+determinar matematicamente uma forma de o calcular:
+
+\begin{math}
+(n + 1)!(n!)
+= (n + 1)(n!)(n!)
+= (n + 1)(n!)^2
+\end{math}
+
+Conseguimos, então, criar uma função recursiva que calcula $(n!)^2$:
+
+\begin{spec}
+bot 0 = 1
+bot (n + 1) = (bot n) * n * n
+\end{spec}
+
+Podemos fazer o mesmo para o numerador, $(2n)!$:
+
+\begin{math}
+(2n)!
+= (2n) * (2n - 1) * (2(n - 1))!
+\end{math}
+
+\begin{spec}
+top 0 = 1
+top (n + 1) = (2 * n * (2 * n - 1)) * (top n)
+\end{spec}
+
+Utilizando isto, conseguimos determinar então uma função final que calcula o valor final:
+
+\begin{spec}
+cat n = (top n) `div` ((n + 1) * (bot n))
+\end{spec}
+
+Podemos definir todas as funções necessárias para utilizar a regra de algibeira:
 
 \begin{code}
-calcLine :: NPoint -> (NPoint -> OverTime NPoint)
-calcLine = cataList h where
-   h = undefined
+bot 0 = 1
+bot (n + 1) = (bot n) * (s n) * (s n)
+top 0 = 1
+top (n + 1) = (2 * (s n) * (2 * (s n) - 1)) * (top n)
+s 0 = 1
+s (n + 1) = 1 + s n
+\end{code}
 
+Aplicando a regra de algibeira chegamos então à solução apresentada:
+
+\begin{spec}
+cat = prj . for loop inic where
+  loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
+  inic = (1, 1, 1)
+  prj (top, bot, n) = (top `div` (n * bot))
+\end{spec}
+
+
+\subsection*{Problema 3}
+
+\begin{eqnarray*}
+\start
+    |lcbr(
+          calcLine [] = const nil
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{nil x = []}
+%
+    |lcbr(
+          calcLine (nil x) = const nil
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{Def-comp}
+%
+    |lcbr(
+          (calcLine . nil ) x = const nil
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{Def-const}
+%
+    |lcbr(
+          (calcLine . nil ) x = (const (const nil)) x
+    )(
+          calcLine (p:x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{nil x = []; def-comp, def-const, cons(h,t) = h:t}
+%
+    |lcbr(
+          (calcLine . nil) x = const (const nil) x
+    )(
+          (calcLine . cons) (p,x) = (curry g) p (calcLine x)
+    )|
+%
+\just\equiv{def curry, Igualdade extensional}
+%
+    |lcbr(
+          calcLine . nil = const (const nil)
+    )(
+          (calcLine . cons) (p,x) = g(p , calcLine x)
+    )|
+%
+\just\equiv{Def-x, def-id, igualdade extensional, def-comp}
+%
+    |lcbr(
+          calcLine . nil = const (const nil)
+    )(
+          calcLine . cons = f . (id x calcLine)
+    )|
+%
+\just\equiv{Eq-+}
+%
+    | [calcLine . nil, calcLine . cons] = [const(const nil), g . (id ><
+            calcLine)] |
+%
+\just\equiv{Fusão-+}
+%
+| calcLine . [nil, cons] = [ const (const nil), g. (id >< calcLine)] |
+%
+\just\equiv{Nat-id, absorção-+}
+%
+| calcLine . [nil, cons] = [ const(const nil), g ] . (id + id >< calcLine) |
+%
+\just\equiv{inL = [nil,cons], F f = id + id x f}
+%
+| calcLine . [nil, cons] = [ const(const nil), g ] . F calcLine |
+%
+\just\equiv{Universal-cata}
+%
+| calcLine = cataLTree [ const(const nil), g ] |
+%
+\qed
+\end{eqnarray*}
+
+
+\begin {code}
+calcLine :: NPoint -> (NPoint -> OverTime NPoint)
+calcLine = cataList (either (const (const nil)) g) where
+   g :: (Rational, NPoint -> OverTime NPoint) -> (NPoint -> OverTime NPoint)
+   g (d,f) l = case l of
+       []     -> nil
+       (x:xs) -> \z -> concat $ (sequenceA [singl . linear1d d x, f xs]) z
+\end{code}
+
+\begin{code}
 deCasteljau :: [NPoint] -> OverTime NPoint
 deCasteljau = hyloAlgForm alg coalg where
-   coalg = undefined
-   alg = undefined
+   coalg = divide
+   alg = conquer
 
-hyloAlgForm = undefined
+divide [] = i1 []
+divide [a] = i1 a
+divide l = i2 (init l, tail l)
+
+quer (x,y)= \pt->calcLine (x pt) (y pt) pt
+
+conquer = either const quer
+
+hyloAlgForm f g =  (cataLTree f) .  (anaLTree g)
 \end{code}
 
 \subsection*{Problema 4}
@@ -1090,19 +1422,195 @@ Solução para listas não vazias:
 avg = p1.avg_aux
 \end{code}
 
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |A|^{+}
+           \ar[d]_-{|split avg length|}
+&
+    |A + A| \times |A|^{+}
+           \ar[d]^{|id + (split avg length)|}
+           \ar[l]_-{|inNat|}
+\\
+     |A| \times |Nat0|
+&
+     |A + A| \times (|A| \times |Nat0|)
+           \ar[l]^-{|g|}
+}
+\end{eqnarray*}
+
+A partir do diagrama facilmente chegamos ao gene. Caso a sequência seja unitária então o
+resultado é o próprio número com length de 1. Se não, aplicamos a definição de avg e aplicamos
+a função succ à length que já tinha sido calculada.
+
+
 \begin{code}
-avg_aux = undefined
+outSList([a]) = i1(a)
+outSList(a:b) = i2(a,b)
+
+cataSList g = g . (id -|- id >< cataSList g) . outSList
+
+avg_aux = cataSList (either (split id one) (split k (succ . p2 . p2)))
+    where
+        k :: (Double,(Double,Integer)) -> Double
+        k (a,(b,c)) = (a + c' * b) / (c'+1)
+            where
+                c' = fromIntegral c
 \end{code}
+
 Solução para árvores de tipo \LTree:
 \begin{code}
 avgLTree = p1.cataLTree gene where
-   gene = undefined
+    gene = either (split id one) (split k (add . (p2 >< p2)))
+    k :: ((Double,Integer),(Double,Integer)) -> Double
+    k ((a,b),(c,d)) = (a*b' + c*d') / (b' + d')
+        where
+           b' = fromIntegral b
+           d' = fromIntegral d
+
 \end{code}
+
 
 \subsection*{Problema 5}
 Inserir em baixo o código \Fsharp\ desenvolvido, entre \verb!\begin{verbatim}! e \verb!\end{verbatim}!:
+module BTree.
+
+\Fsharp\  mostrou ser uma linguagem bastante semelhante a Haskell, sendo a diferença
+principal a sintaxe (por exemplo, requirir o uso de \textit{let} antes da
+definição de funções). A parte mais difícil desta "tradução" foi a diferença
+na omissão de argumentos, algo que, em geral, não é possível em \Fsharp\ .
 
 \begin{verbatim}
+open Cp
+
+// (1) Datatype definition -----------------------------------------------------
+type BTree<'a> = Empty | Node of 'a * (BTree<'a> * BTree<'a>)
+
+let inBTree x = either (konst Empty) Node x
+let outBTree x =
+    match x with
+    | Empty -> i1 ()
+    | Node (a,(t1,t2)) -> i2 (a, (t1, t2))
+
+// (2) Ana + cata + hylo -------------------------------------------------------
+let baseBTree f g = id -|- (f >< (g >< g))
+let recBTree g = baseBTree id g
+let rec cataBTree g x = (g << recBTree (cataBTree g) << outBTree) x
+let rec anaBTree g x = (inBTree << recBTree (anaBTree g) << g) x
+let hyloBTree h g x = (cataBTree h << anaBTree g) x
+
+
+// (3) Map ---------------------------------------------------------------------
+let fmap f x = cataBTree (inBTree << baseBTree f id) x
+
+// (4) Examples ----------------------------------------------------------------
+
+// (4.1) Inmersion (mirror) ----------------------------------------------------
+let invBTree x = cataBTree (inBTree << (id -|- (id >< swap))) x
+
+// (4.2) Counting --------------------------------------------------------------
+let countBTree x = cataBTree (either (konst 0) (succ << (uncurry (+)) << p2)) x
+
+// (4.3) Serialization ---------------------------------------------------------
+let inord y =
+    let join (x, (l, r)) = l @ [x] @ r
+    either nil join y
+let inordt x = cataBTree inord x // in-order traversal
+
+let preord y =
+    let f (x, (l, r)) = x::(l @ r)
+    either nil f y
+let preordt x = cataBTree preord x // pre-order traversal
+
+let postordt y = // post-order traversal
+    let f (x, (l, r)) = l @ r @ [x]
+    cataBTree (either nil f) y
+
+// (4.4) Quicksort -------------------------------------------------------------
+let rec part p x =
+    match x with
+    | [] -> ([], [])
+    | (h::t) -> let s, l = part p t
+                if p h then (h::s,l) else (s,h::l)
+
+let qsep x =
+    match x with
+    | [] -> i1 ()
+    | (h::t) -> let s, l = part (fun n -> n < h) t
+                i2 (h, (s, l))
+
+let qSort x = hyloBTree inord qsep x
+
+// (4.5) Traces ----------------------------------------------------------------
+let rec union a b =
+    match b with
+    | [] -> a
+    | h::t when List.contains h a -> union a t
+    | h::t -> h::(union a t)
+
+let tunion (a, (l, r)) = union (List.map (fun x -> a::x) l) (List.map (fun x -> a::x) r)
+let traces x = cataBTree (either (konst [[]]) tunion) x
+
+// (4.6) Towers of Hanoi -------------------------------------------------------
+let present = inord
+let strategy (d, n) = if n = 0 then i1 () else i2 ((n - 1, d), ((not d, n - 1), (not d, n - 1)))
+
+let hanoi x = hyloBTree present strategy x
+
+// The Towers of Hanoi problem comes from a puzzle marketed in 1883
+// by the French mathematician Édouard Lucas, under the pseudonym
+// Claus. The puzzle is based on a legend according to which
+// there is a temple, apparently in Bramah rather than in Hanoi as
+// one might expect, where there are three giant poles fixed in the
+// ground. On the first of these poles, at the time of the world's
+// creation, God placed sixty four golden disks, each of different
+// size, in decreasing order of size. The Bramin monks were given
+// the task of moving the disks, one per day, from one pole to another
+// subject to the rule that no disk may ever be above a smaller disk.
+// The monks' task would be complete when they had succeeded in moving
+// all the disks from the first of the poles to the second and, on
+// the day that they completed their task the world would come to
+// an end!
+
+// There is a well­known inductive solution to the problem given
+// by the pseudocode below. In this solution we make use of the fact
+// that the given problem is symmetrical with respect to all three
+// poles. Thus it is undesirable to name the individual poles. Instead
+// we visualize the poles as being arranged in a circle; the problem
+// is to move the tower of disks from one pole to the next pole in
+// a specified direction around the circle. The code defines H n d
+// to be a sequence of pairs (k,d') where n is the number of disks,
+// k is a disk number and d and d' are directions. Disks are numbered
+// from 0 onwards, disk 0 being the smallest. (Assigning number 0
+// to the smallest rather than the largest disk has the advantage
+// that the number of the disk that is moved on any day is independent
+// of the total number of disks to be moved.) Directions are boolean
+// values, true representing a clockwise movement and false an anti­clockwise
+// movement. The pair (k,d') means move the disk numbered k from
+// its current position in the direction d'. The semicolon operator
+// concatenates sequences together, [] denotes an empty sequence
+// and [x] is a sequence with exactly one element x. Taking the pairs
+// in order from left to right, the complete sequence H n d prescribes
+// how to move the n smallest disks one­by­one from one pole to the
+// next pole in the direction d following the rule of never placing
+// a larger disk on top of a smaller disk.
+
+// H 0     d = [],
+// H (n+1) d = H n ¬d ; [ (n, d) ] ; H n ¬d.
+
+// (excerpt from R. Backhouse, M. Fokkinga / Information Processing
+// Letters 77 (2001) 71--76)
+
+
+// (5) Depth and balancing (using mutual recursion) --------------------------
+let baldepth n =
+    let h (a, ((b1, b2), (d1, d2))) = (b1 && b2 && abs (d1 - d2) <= 1, 1 + max d1 d2)
+    let f ((b1, d1), (b2, d2)) = ((b1, b2), (d1, d2))
+    let g x = either (konst (true, 1)) (h << (id >< f)) x
+    cataBTree g n
+
+let balBTree x = (p1 << baldepth) x
+let depthBTree x = (p2 << baldepth) x
+
 \end{verbatim}
 
 %----------------- Fim do anexo com soluções dos alunos ------------------------%
