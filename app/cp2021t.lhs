@@ -1458,6 +1458,8 @@ cat = prj . for loop inic where
 \qed
 \end{eqnarray*}
 
+Chegando a esta conclusão, é imediata a passagem deste catamorfismo para a
+linguagem Haskell.
 
 \begin{code}
 calcLine :: NPoint -> (NPoint -> OverTime NPoint)
