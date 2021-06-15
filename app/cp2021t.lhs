@@ -1311,61 +1311,70 @@ ad_gen v = either (split (const X) (const 1)) resto where
 
 \subsection*{Problema 2}
 
-Começamos por separar o cálculo em duas partes, a parte do numerador e a do
-denominador. Se nos focarmos no denominador, $(n + 1)!(n!)$, conseguimos
-determinar matematicamente uma forma de o calcular:
+Começamos por tentar definir \textit{cat} recursivamente. Para isso, vamos determinar o valor de \textit{cat (n + 1)}:
+\\
 
 \begin{math}
-(n + 1)!(n!)
-= (n + 1)(n!)(n!)
-= (n + 1)(n!)^2
+Cat_n = \frac{(2n)!}{(n+1)!(n!)}
+
+Cat_{n+1} = \frac{(2(n+1))!}{(n+2)!(n+1)!}
 \end{math}
-
-Conseguimos, então, criar uma função recursiva que calcula $(n!)^2$:
-
-\begin{spec}
-bot 0 = 1
-bot (n + 1) = (bot n) * n * n
-\end{spec}
-
-Podemos fazer o mesmo para o numerador, $(2n)!$:
+\begin{math}
+= \frac{(2n+2)(2n+1)(2n)!}{(n+2)(n+1!)(n+1)n!}
+\end{math}
+\begin{math}
+= \frac{(2n)!}{(n+1)!n!} \times \frac{(2n+2)(2n+1)}{(n+2)(n+1)}
+\end{math}
 
 \begin{math}
-(2n)!
-= (2n) * (2n - 1) * (2(n - 1))!
+= Cat_n \times (\frac{2(n+1)(2n+1)}{(n+1)(n+2)})
 \end{math}
 
+\begin{math}
+= Cat_n \times \frac{4n + 2}{n + 2}
+\end{math}
+
+\begin{math}
+= \frac{(4n + 2) \times Cat_n}{n + 2}
+\end{math}
+\\
+
+Conseguimos, então, extrair o numerador e denominador da fração para as suas
+próprias funções:
+
 \begin{spec}
-top 0 = 1
-top (n + 1) = (2 * n * (2 * n - 1)) * (top n)
+top n = 4*n + 2
+bot n = n + 2
+\end{spec}
+\indent São equivalentes a:
+\begin{spec}
+top 0 = 2
+top (n + 1) = 4 + top n
+\end{spec}
+\begin{spec}
+bot 0 = 2
+bot (n + 1) = 1 + bot n
 \end{spec}
 
-Utilizando isto, conseguimos determinar então uma função final que calcula o valor final:
+Assim, podemos definir todas as funções necessárias para utilizar a regra de algibeira:
 
 \begin{spec}
-cat n = (top n) `div` ((n + 1) * (bot n))
+cat 0 = 1
+cat (n + 1) = div ((top n) * (cat n)) (bot n)
+top 0 = 2
+top (n + 1) = 4 + top n
+bot 0 = 2
+bot (n + 1) = 1 + bot n
 \end{spec}
 
-Podemos definir todas as funções necessárias para utilizar a regra de algibeira:
+Aplicando a regra de algibeira chegamos então à solução:
 
 \begin{code}
-bot 0 = 1
-bot (n + 1) = (bot n) * (s n) * (s n)
-top 0 = 1
-top (n + 1) = (2 * (s n) * (2 * (s n) - 1)) * (top n)
-s 0 = 1
-s (n + 1) = 1 + s n
-\end{code}
-
-Aplicando a regra de algibeira chegamos então à solução apresentada:
-
-\begin{spec}
 cat = prj . for loop inic where
-  loop (top, bot, n) = (2 * n * (2 * n - 1) * top, n * n * bot, 1 + n)
-  inic = (1, 1, 1)
-  prj (top, bot, n) = (top `div` (n * bot))
-\end{spec}
-
+  loop (cat, top, bot) = (div (top * cat) bot, top + 4, bot + 1)
+  inic = (1, 2, 2)
+  prj (cat, top, bot) = cat
+\end{code}
 
 \subsection*{Problema 3}
 
@@ -1449,6 +1458,8 @@ cat = prj . for loop inic where
 \qed
 \end{eqnarray*}
 
+Chegando a esta conclusão, é imediata a passagem deste catamorfismo para a
+linguagem Haskell.
 
 \begin{code}
 calcLine :: NPoint -> (NPoint -> OverTime NPoint)
