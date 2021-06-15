@@ -1471,7 +1471,7 @@ calcLine = cataList (either (const (const nil)) g) where
 \end{code}
 
 O raciocínio para este exercício foi dividir a função numa fase de divisão/criação
-para chegar numa estrutura intermédia. Sendo que a partir desta estrutura intermédia 
+para chegar numa estrutura intermédia. Sendo que a partir desta estrutura intermédia
 se aplica uma fase de conquista, em que se vai consumindo a estrutura intermédia para
 obter o resultado de tipo |Overtime Npoint|.
 
@@ -1484,17 +1484,13 @@ Desta forma conseguimos chegar à função
 
 |divide :: Npoint|$^{*}$ \rightarrow |Npoint + (Npoint|$^{*} \times $|Npoint|$^{*}$)
 
-No entanto, percebemos imediatamente que a função de divide vai levar ao 
+No entanto, percebemos imediatamente que a função de divide vai levar ao
 bifuntor \textbf{B}|(Npoint, Npoint|$^{*}$), sendo este o bifuntor das LTrees.
 Ou seja, o anamorfismo com o gene divide, vai construir uma LTree.
-Com esta estrutura intermédia definida, podemos "conquistar". O objetivo agora 
+Com esta estrutura intermédia definida, podemos "conquistar". O objetivo agora
 é encontrar uma função que consuma esta estrutura. Sendo esta função um catamorfismo
 sobre LTrees falta apenas definir um gene. Pela generalização em problemas de catamorfismos
-facilmente chegamos ao gene 
-
-\begin{code}
-conquer = either const quer
-\end{code}
+facilmente chegamos ao gene
 
 \begin{code}
 deCasteljau :: [NPoint] -> OverTime NPoint
@@ -1538,40 +1534,39 @@ avg = p1.avg_aux
 %
 \just\equiv{Def functor List, Def Absorção-+, Def inList, Def Absorção-+, Def Eq-+}
 %
-    |lcbr(
-          avg . singl = b1 . id
-    )(
-          avg . cons = q1 . (id X (split avg length))
-    )(    
-          length . singl = b2 . id
-    )(   
-          length . cons = q2 . (id X (split avg length))
-    )|
+\left\{
+   \begin{array}{llll}
+      | avg . singl = b1 . id | \\
+      | avg . cons = q1 . (id >< (split avg length)) | \\
+      | length . singl = b2 . id | \\
+      | length . cons = q2 . (id >< (split avg length)) | \\
+  \end{array}
+\right.
 %
 \just\equiv{Point-Wise}
 %
-    |lcbr(
-         avg [x] = b1
-    )(
-         avg (h:t) = q1 (id h, (split avg length) t)
-    )(    
-          length [x] = b2
-    )(   
-          length (h:t) = q2  (id h, (split avg length) t)
-    )|
+\left\{
+   \begin{array}{llll}
+         | avg [x] = b1 | \\
+         | avg (h:t) = q1 (id h, (split avg length) t) | \\
+         | length [x] = b2 | \\
+         | length (h:t) = q2  (id h, (split avg length) t) | \\
+  \end{array}
+\right.
 %
 \just\equiv{Def id, b1 = x, b2 = one, q1 = k, q2 = succ . p2 . p2 }
 %
+\left\{
+   \begin{array}{llll}
 
-    |lcbr(
-         avg [x] = one
-    )(
-         avg (h:t) = k (h, (split avg length) t)
-    )(    
-          length [x] = x
-    )(   
-          length (h:t) = (succ . p2 . p2) (h, (split avg length))
-    )|
+         | avg [x] = one | \\
+         | avg (h:t) = k (h, (split avg length) t) | \\
+         | length [x] = x | \\
+         | length (h:t) = (succ . p2 . p2) (h, (split avg length)) | \\
+    \end{array}
+\right.
+%
+
 
 \qed
 \end{eqnarray*}
