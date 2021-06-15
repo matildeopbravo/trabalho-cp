@@ -1092,6 +1092,36 @@ seja a função pretendida.
 \textbf{NB}: usar divisão inteira.
 Apresentar de seguida a justificação da solução encontrada.
 
+Começamos por separar o cálculo em duas partes, a parte do numerador e a do
+denominador. Se nos forcamos no denominador, $(n + 1)!(n!)$, conseguimos
+determinar matematicamente uma forma de o calcular:
+
+\begin{math}
+(n + 1)!(n!)
+= (n + 1)(n!)(n!)
+= (n + 1)(n!)^2
+\end{math}
+
+Conseguimos, então, criar uma função recursiva que calcula $(n!)^2$:
+
+\begin{spec}
+bot 0 = 1
+bot (n + 1) = (bot n) * n * n
+\end{spec}
+
+Podemos fazer o mesmo para o numerador, $(2n)!$:
+
+\begin{math}
+(2n)!
+= (2n) * (2n - 1) * (2(n - 1))!
+\end{math}
+
+\begin{spec}
+top 0 = 1
+top (n + 1) = (2 * n * (2 * n - 1)) * (top n)
+\end{spec}
+
+
 \subsection*{Problema 3}
 
 \begin{code}
@@ -1176,6 +1206,7 @@ avgLTree = p1.cataLTree gene where
 Inserir em baixo o código \Fsharp\ desenvolvido, entre \verb!\begin{verbatim}! e \verb!\end{verbatim}!:
 module BTree
 
+\begin{verbatim}
 open Cp
 
 // (1) Datatype definition -----------------------------------------------------
@@ -1306,7 +1337,7 @@ let baldepth n =
 
 let balBTree x = (p1 << baldepth) x
 let depthBTree x = (p2 << baldepth) x
-\begin{verbatim}
+
 \end{verbatim}
 
 %----------------- Fim do anexo com soluções dos alunos ------------------------%
