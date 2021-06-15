@@ -700,7 +700,7 @@ Verifique as suas funções testando a propriedade seguinte:
 A média de uma lista não vazia e de uma \LTree\ com os mesmos elementos coincide,
 a menos de um erro de 0.1 milésimas:
 \begin{code}
-prop_avg :: Ord a => [a] -> Property
+prop_avg :: [Double] -> Property
 prop_avg = nonempty .==>. diff .<=. const 0.000001 where
    diff l = avg l - (avgLTree . genLTree) l
    genLTree = anaLTree lsplit
