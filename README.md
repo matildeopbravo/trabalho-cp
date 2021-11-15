@@ -2,3 +2,5 @@
 
 - PDF e .lhs na pasta app
 - .hs na pasta src
+
+**Nota Final** 18
